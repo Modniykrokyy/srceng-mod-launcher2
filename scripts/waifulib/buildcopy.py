@@ -22,7 +22,7 @@ Examples::
 
 """
 import os, shutil
-from waflib import Errors, Task, TaskGen, Utils, Node, Logs
+from waflib import Errors, Task, TaskGen, Utils, Node, Logs # type: ignore
 
 @TaskGen.before_method('process_source')
 @TaskGen.feature('buildcopy')
