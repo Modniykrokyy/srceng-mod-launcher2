@@ -2,13 +2,9 @@
 # encoding: utf-8
 # a1batross, 2019
 
-from asyncio import Task
-from configparser import Error
-from email import utils
-from lib2to3.pytree import Node
 import os
-from waflib import * # type: ignore
-from waflib.Tools import javaw # type: ignore
+from waflib import *
+from waflib.Tools import javaw
 
 android_sdk_home_env = ['ANDROID_SDK_HOME', 'ANDROID_SDK']
 
@@ -98,7 +94,7 @@ def configure(conf):
 	# optional
 	try:
 		conf.find_program('aapt', path_list = paths)
-	except Error.ConfigurationError:
+	except Errors.ConfigurationError:
 		conf.find_program('aapt2', path_list = paths)
 
 	# optional
@@ -106,7 +102,7 @@ def configure(conf):
 	try:
 		conf.find_program('d8', path_list = paths)
 	# else:
-	except Error.ConfigurationError:
+	except Errors.ConfigurationError:
 		conf.find_program('dx', path_list = paths)
 
 class aapt2compile(javaw.JTask):
@@ -118,7 +114,7 @@ class aapt2compile(javaw.JTask):
 		"""
 		Hash by resource directory path
 		"""
-		return utils.h_list([self.__class__.__name__, self.generator.outdir.abspath(), self.env.RESDIR])
+		return Utils.h_list([self.__class__.__name__, self.generator.outdir.abspath(), self.env.RESDIR])
 
 	def runnable_status(self):
 		"""
@@ -251,8 +247,8 @@ class apksigner(SignerTask):
 class apksigner_termux(SignerTask):
 	run_str = '${APKSIGNER} ${KEYSTORE} ${SRC} ${TGT}'
 
-@TaskGen.feature('android') # type: ignore
-@TaskGen.before_method('apply_java') # type: ignore
+@TaskGen.feature('android')
+@TaskGen.before_method('apply_java')
 def apply_aapt(self):
 	# Build resources, generate R.java and create empty APK
 	outdir = getattr(self, 'outdir', None)
@@ -307,8 +303,8 @@ def apply_aapt(self):
 		self.aapt2link_task = self.create_task('aapt2link', tgt=tgt, cwd=outdir)
 		self.aapt2link_task.set_run_after(self.aapt2compile_task) # we don't know *.flat outputs from aapt2compile yet
 
-@TaskGen.feature('android') # type: ignore
-@TaskGen.after_method('apply_java') # type: ignore
+@TaskGen.feature('android')
+@TaskGen.after_method('apply_java')
 def apply_d8(self):
 	self.javac_task.set_run_after(self.aapt2link_task) # we don't know R.java yet
 
@@ -350,8 +346,8 @@ def apply_d8(self):
 	except AttributeError:
 		pass
 
-@TaskGen.feature('android') # type: ignore
-@TaskGen.after_method('set_classpath') # type: ignore
+@TaskGen.feature('android')
+@TaskGen.after_method('set_classpath')
 def set_android_classpath(self):
 	if len(self.env.CLASSPATH) == 0:
 		self.env.D8_CLASSPATH = ''
